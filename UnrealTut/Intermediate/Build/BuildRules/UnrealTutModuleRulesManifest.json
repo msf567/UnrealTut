@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"A:\\UnrealTut\\UnrealTut\\Source\\UnrealTut\\UnrealTut.Build.cs",
+		"A:\\UnrealTut\\UnrealTut\\Source\\UnrealTut.Target.cs",
+		"A:\\UnrealTut\\UnrealTut\\Source\\UnrealTutEditor.Target.cs"
+	],
+	"EngineVersion": "5.0.0"
+}
