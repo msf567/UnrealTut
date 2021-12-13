@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TutCharacter.h"
+#include "DrawDebugHelpers.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ATutCharacter::ATutCharacter()
@@ -9,9 +12,14 @@ ATutCharacter::ATutCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("Spring Arm");
+	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("My Camera");
 	CameraComp-> SetupAttachment(SpringArmComp);
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	
+	bUseControllerRotationYaw = false;
 }
 
 // Called when the game starts or when spawned
@@ -21,16 +29,43 @@ void ATutCharacter::BeginPlay()
 	
 }
 
-void ATutCharacter::MoveForward(float val)
+void ATutCharacter::MoveForward(float Val)
 {
-	AddMovementInput(GetActorForwardVector(),val);
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch = 0;
+	ControlRot.Roll = 0;
+	AddMovementInput(ControlRot.Vector(),Val);
 }
+
+void ATutCharacter::MoveRight(float Val)
+{
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch = 0;
+	ControlRot.Roll = 0;
+	FVector RightVector =  UKismetMathLibrary::GetRightVector(ControlRot);
+	AddMovementInput(RightVector,Val);
+}
+
 
 // Called every frame
 void ATutCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// -- Rotation Visualization -- //
+	const float DrawScale = 100.0f;
+	const float Thickness = 5.0f;
 
+	FVector LineStart = GetActorLocation();
+	// Offset to the right of pawn
+	LineStart += GetActorRightVector() * 100.0f;
+	// Set line end in direction of the actor's forward
+	FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 100.0f);
+	// Draw Actor's Direction
+	DrawDebugDirectionalArrow(GetWorld(), LineStart, ActorDirection_LineEnd, DrawScale, FColor::Yellow, false, 0.0f, 0, Thickness);
+
+	FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 100.0f);
+	// Draw 'Controller' Rotation ('PlayerController' that 'possessed' this character)
+	DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.0f, 0, Thickness);
 }
 
 // Called to bind functionality to input
@@ -38,7 +73,7 @@ void ATutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATutCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ATutCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 }
-
