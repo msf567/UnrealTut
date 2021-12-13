@@ -15,7 +15,9 @@ UCLASS()
 class UNREALTUT_API ATutCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
+protected:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> ProjectileClass;
 public:
 	// Sets default values for this character's properties
 	ATutCharacter();
@@ -30,6 +32,8 @@ protected:
 
 	void MoveForward(float Val);
 	void MoveRight(float Val);
+	void PrimaryAttack();
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
